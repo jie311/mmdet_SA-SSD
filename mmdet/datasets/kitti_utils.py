@@ -1,3 +1,6 @@
+# update for visualization
+# reference: https://github.com/charlesq34/frustum-pointnets/blob/master/kitti/kitti_util.py
+
 import numpy as np
 import os
 import cv2
