@@ -2,6 +2,7 @@
 
 Author: Charles R. Qi
 Date: September 2017
+https://github.com/charlesq34/frustum-pointnets/blob/master/kitti/kitti_object.py
 '''
 from __future__ import print_function
 
@@ -10,9 +11,11 @@ import sys
 import numpy as np
 import cv2
 from PIL import Image
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-ROOT_DIR = os.path.dirname(BASE_DIR)
-sys.path.append(os.path.join(ROOT_DIR, 'mayavi'))
+# BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+# ROOT_DIR = os.path.dirname(BASE_DIR)
+# sys.path.append(os.path.join(ROOT_DIR, 'mayavi'))
+
+# wn updates kitti_utils for kitti_object
 import mmdet.datasets.kitti_utils as utils
 
 try:
@@ -20,6 +23,8 @@ try:
 except NameError:
     raw_input = input  # Python 3
 
+# wn update
+# from viz_util.py:  https://github.com/charlesq34/frustum-pointnets/blob/master/mayavi/viz_util.py
 def draw_lidar_simple(pc, color=None):
     ''' Draw lidar points. simplest set up. '''
     fig = mlab.figure(figure=None, bgcolor=(0,0,0), fgcolor=None, engine=None, size=(1600, 1000))
