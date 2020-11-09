@@ -1,10 +1,15 @@
 ## SA-SSD: Structure Aware Single-stage 3D Object Detection from Point Cloud (CVPR 2020) [\[paper\]](https://www4.comp.polyu.edu.hk/~cslzhang/paper/SA-SSD.pdf)
 
-# Update
+# Update 20201109
 
 [配置步骤](https://blog.csdn.net/weixin_38362784/article/details/109481359)
 
 [KITTI可视化](https://blog.csdn.net/weixin_38362784/article/details/109566696)
+
+## Visualization
+```
+python visualize/kitti_object.py
+```
 
 # Original Repository
 >  https://github.com/skyhehe123/SA-SSD

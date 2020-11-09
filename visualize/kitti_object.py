@@ -4,6 +4,10 @@ Author: Charles R. Qi
 Date: September 2017
 https://github.com/charlesq34/frustum-pointnets/blob/master/kitti/kitti_object.py
 '''
+
+# update for SA-SSD
+# 20201109 by wennieWN
+
 from __future__ import print_function
 
 import os
