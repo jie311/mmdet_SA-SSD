@@ -4,7 +4,7 @@ Date: September 2017
 Ref: https://github.com/hengck23/didi-udacity-2017/blob/master/baseline-04/kitti_data/draw.py
 '''
 
-# viz_util.py 在此处并为被调用
+# Deprecated: viz_util.py并未被调用
 # 下述三个函数已经加至kitti_object.py
 
 import numpy as np
