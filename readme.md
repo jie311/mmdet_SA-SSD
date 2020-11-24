@@ -11,6 +11,19 @@
 python visualize/kitti_object.py
 ```
 
+## Train & Eval
+
+Train Model with single GPU
+```
+python ./tools/train.py ./configs/car_cfg.py
+```
+
+Eval Model with single GPU
+```
+python ./tools/test.py ./configs/car_cfg.py ./work_dir/checkpoint_epoch_20.pth 
+```
+
+
 # Original Repository
 >  https://github.com/skyhehe123/SA-SSD
 

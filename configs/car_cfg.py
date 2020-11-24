@@ -81,11 +81,12 @@ test_cfg = dict(
 )
 # dataset settings
 dataset_type = 'KittiLiDAR'
-data_root = '/home/billyhe/hdd/KITTI/'
+data_root = '/home/ch511/mmdet_dataset/KITTI/'
 img_norm_cfg = dict(
     mean=[123.675, 116.28, 103.53], std=[58.395, 57.12, 57.375], to_rgb=True)
 data = dict(
-    imgs_per_gpu=2,
+    # imgs_per_gpu=2,
+    imgs_per_gpu=1,
     workers_per_gpu=4,
     train=dict(
         type=dataset_type,
@@ -103,7 +104,8 @@ data = dict(
         augmentor=dict(
             type='PointAugmentor',
             root_path=data_root,
-            info_path=data_root + 'kitti_dbinfos_train.pkl',
+            # info_path=data_root + 'kitti_dbinfos_train.pkl',      # wn update
+            info_path=data_root + 'kitti_dbinfos_trainval.pkl',
             sample_classes=['Car'],#, 'Pedestrian', 'Cyclist'],
             min_num_points=[5],# 5, 5],
             sample_max_num=[15],# 10, 10],
@@ -160,6 +162,7 @@ data = dict(
         with_label=False,
         with_point=True,
         class_names=['Car'],# 'Pedestrian', 'Cyclist'],
+        # generator：生成voxel的配置
         generator=dict(
             type='VoxelGenerator',
             voxel_size=[0.05, 0.05, 0.1],
@@ -207,13 +210,13 @@ lr_config = dict(
     pct_start = 0.4
 )
 
-checkpoint_config = dict(interval=2)
+checkpoint_config = dict(interval=10)
 log_config = dict(interval=20)
 
-total_epochs = 80
+total_epochs = 20
 dist_params = dict(backend='nccl')
 log_level = 'INFO'
-work_dir = '../20200701'
+work_dir = './work_dir'
 load_from = None
 resume_from = None
 workflow = [('train', 1)]

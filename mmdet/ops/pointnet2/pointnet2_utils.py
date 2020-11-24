@@ -24,7 +24,7 @@ class ThreeNN(Function):
 
         N, _ = unknown.size()
         m = known.size(0)
-        dist2 = torch.cuda.FloatTensor(N, 3)
+        dist2 = torch.cuda.FloatTensor(N, 3)  
         idx = torch.cuda.IntTensor(N, 3)
 
         pointnet2.three_nn_wrapper(N, m, unknown, known, dist2, idx)

@@ -93,7 +93,7 @@ def get_dataset(data_cfg):
     assert len(img_prefixes) == num_dset
 
     if 'generator' in data_cfg.keys() and data_cfg['generator'] is not None:
-        generator = obj_from_dict(data_cfg['generator'], voxel_generator)
+        generator = obj_from_dict(data_cfg['generator'], voxel_generator)               # 生成VOXEL
     else:
         generator = None
 
@@ -102,7 +102,7 @@ def get_dataset(data_cfg):
     else:
         augmentor = None
 
-    if 'anchor_generator' in data_cfg.keys() and data_cfg['anchor_generator'] is not None:
+    if 'anchor_generator' in data_cfg.keys() and data_cfg['anchor_generator'] is not None:      # Anchor
         anchor_generator = {cls: obj_from_dict(cfg, anchor3d_generator) for cls, cfg in data_cfg['anchor_generator'].items()}
     else:
         anchor_generator = None

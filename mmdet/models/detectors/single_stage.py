@@ -49,7 +49,7 @@ class SingleStageDetector(BaseDetector, RPNTestMixin, BBoxTestMixin,
             logger = logging.getLogger()
             load_checkpoint(self, pretrained, strict=False, logger=logger)
 
-    def merge_second_batch(self, batch_args):
+    def merge_second_batch(self, batch_args):       # 处理多个batch
         ret = {}
         for key, elems in batch_args.items():
             if key in ['voxels', 'num_points', ]:
@@ -73,12 +73,13 @@ class SingleStageDetector(BaseDetector, RPNTestMixin, BBoxTestMixin,
         return ret
 
     def forward_train(self, img, img_meta, **kwargs):
-
+        # img [1, 3, 384, 1248]
         batch_size = len(img_meta)
-
+        # step1: 处理多batch情况
         ret = self.merge_second_batch(kwargs)
-
+        # step2: 
         vx = self.backbone(ret['voxels'], ret['num_points'])
+        # step3:
         x, conv6, point_misc = self.neck(vx, ret['coordinates'], batch_size, is_test=False)
 
         losses = dict()
@@ -110,11 +111,11 @@ class SingleStageDetector(BaseDetector, RPNTestMixin, BBoxTestMixin,
     def forward_test(self, img, img_meta, **kwargs):
 
         batch_size = len(img_meta)
-
-        ret = self.merge_second_batch(kwargs)
-
-        vx = self.backbone(ret['voxels'], ret['num_points'])
-        (x, conv6) = self.neck(vx, ret['coordinates'], batch_size, is_test=True)
+        # 处理多个batch_size
+        ret = self.merge_second_batch(kwargs)                   # ret['voxels'] [15470, 5, 4] 15470个体素，每个体素最多5个点 
+                                                                # ret['num_points'] [15470] 记录每个体素包含的点云个数                                                
+        vx = self.backbone(ret['voxels'], ret['num_points'])    # vx [15470, 4] 每个体素的特征  三个坐标和一个反射，体素内所有点云的平均值
+        (x, conv6) = self.neck(vx, ret['coordinates'], batch_size, is_test=True)    # ret['coordinates'] [15470, 4]
 
         rpn_outs = self.rpn_head.forward(x)
 

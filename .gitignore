@@ -1,6 +1,7 @@
 __pycache__/
 .idea
 spconv
+work_dir
 
 # Distribution / packaging
 .Python

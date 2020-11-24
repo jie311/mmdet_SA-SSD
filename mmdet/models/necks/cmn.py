@@ -18,10 +18,10 @@ class SpMiddleFHD(nn.Module):
 
         super(SpMiddleFHD, self).__init__()
 
-        print(output_shape)
+        print(output_shape)     # [40, 1600, 1408]
         self.sparse_shape = output_shape
 
-        self.backbone = VxNet(num_input_features)
+        self.backbone = VxNet(num_input_features)  
         self.fcn = BEVNet(in_features=num_hidden_features, num_filters=256)
 
         self.point_fc = nn.Linear(160, 64, bias=False)
@@ -47,11 +47,11 @@ class SpMiddleFHD(nn.Module):
         for i in range(len(gt_boxes3d)):
             boxes3d = gt_boxes3d[i].cpu()
             idx = torch.nonzero(nxyz[:, 0] == i).view(-1)
-            new_xyz = nxyz[idx, 1:].cpu()
+            new_xyz = nxyz[idx, 1:].cpu()           # [17839, 3] // [16275, 3]
 
-            boxes3d[:, 3:6] *= enlarge
+            boxes3d[:, 3:6] *= enlarge              # [15, 7]
 
-            pts_in_flag, center_offset = pts_in_boxes3d(new_xyz, boxes3d)
+            pts_in_flag, center_offset = pts_in_boxes3d(new_xyz, boxes3d) # pts_in_flag [15, 17839]  center_offset [17839, 3]
             pts_label = pts_in_flag.max(0)[0].byte()
 
             # import mayavi.mlab as mlab
@@ -68,10 +68,10 @@ class SpMiddleFHD(nn.Module):
         pts_labels = torch.cat(pts_labels).cuda()
 
         return pts_labels, center_offsets
-
+    # points [34114, 4], point_cls [34114, 1], point_reg [34114, 3]
     def aux_loss(self, points, point_cls, point_reg, gt_bboxes):
 
-        N = len(gt_bboxes)
+        N = len(gt_bboxes)      # 2 [15, 7] [10, 7]
 
         pts_labels, center_targets = self.build_aux_target(points, gt_bboxes)
 
@@ -98,39 +98,39 @@ class SpMiddleFHD(nn.Module):
             aux_loss_cls = aux_loss_cls,
             aux_loss_reg = aux_loss_reg,
         )
-
+    # neck 主要步骤
     def forward(self, voxel_features, coors, batch_size, is_test=False):
-
-        points_mean = torch.zeros_like(voxel_features)
-        points_mean[:, 0] = coors[:, 0]
-        points_mean[:, 1:] = voxel_features[:, :3]
+        # voxel_features [15470, 4] coors [15470, 4] 其中voxel_features中四个特征分别是3个坐标+1个反射；coors的四个特征分别是batch id+体素中点坐标
+        points_mean = torch.zeros_like(voxel_features)      # points_mean 记录了batch id + 3维平均坐标
+        points_mean[:, 0] = coors[:, 0]     # 获得batch id
+        points_mean[:, 1:] = voxel_features[:, :3]      # 获得每个体素的前三个特征：3个点云的平均坐标
 
         coors = coors.int()
-        x = spconv.SparseConvTensor(voxel_features, coors, self.sparse_shape, batch_size)
-        x, middle = self.backbone(x)
+        x = spconv.SparseConvTensor(voxel_features, coors, self.sparse_shape, batch_size)       # 初始化SparseConvTensor
+        x, middle = self.backbone(x)    # x: [5, 200, 176]  middle: [20, 800, 704] [10, 400, 352] [5, 200, 176]
 
-        x = x.dense()
+        x = x.dense()   # [1, 64, 5, 200, 176] 第一个维度是batch size
         N, C, D, H, W = x.shape
-        x = x.view(N, C * D, H, W)
+        x = x.view(N, C * D, H, W)  # [1, 320, 200, 176]
 
-        x, conv6 = self.fcn(x)
+        x, conv6 = self.fcn(x)  # x: [1, 256, 200, 176], conv6: [1, 256, 200, 176]
 
         if is_test:
             return x, conv6
         else:
             # auxiliary network
-            vx_feat, vx_nxyz = tensor2points(middle[0], (0, -40., -3.), voxel_size=(.1, .1, .2))
-            p0 = nearest_neighbor_interpolate(points_mean, vx_nxyz, vx_feat)
+            vx_feat, vx_nxyz = tensor2points(middle[0], (0, -40., -3.), voxel_size=(.1, .1, .2)) # vx_feat [52914, 32] vx_nxyz [52913, 4]
+            p0 = nearest_neighbor_interpolate(points_mean, vx_nxyz, vx_feat)    # p0 [34114, 32]
 
             vx_feat, vx_nxyz = tensor2points(middle[1], (0, -40., -3.), voxel_size=(.2, .2, .4))
-            p1 = nearest_neighbor_interpolate(points_mean, vx_nxyz, vx_feat)
+            p1 = nearest_neighbor_interpolate(points_mean, vx_nxyz, vx_feat)    # p1 [34114, 64]
 
             vx_feat, vx_nxyz = tensor2points(middle[2], (0, -40., -3.), voxel_size=(.4, .4, .8))
-            p2 = nearest_neighbor_interpolate(points_mean, vx_nxyz, vx_feat)
-
-            pointwise = self.point_fc(torch.cat([p0, p1, p2], dim=-1))
-            point_cls = self.point_cls(pointwise)
-            point_reg = self.point_reg(pointwise)
+            p2 = nearest_neighbor_interpolate(points_mean, vx_nxyz, vx_feat)    # p2 [34114, 64]
+            # 均为全连接层
+            pointwise = self.point_fc(torch.cat([p0, p1, p2], dim=-1))      # pointwise [34114, 64]
+            point_cls = self.point_cls(pointwise)                           # point_cls [34114, 1]
+            point_reg = self.point_reg(pointwise)                           # point_cls [34114, 3]
 
             return x, conv6, (points_mean, point_cls, point_reg)
 
@@ -174,17 +174,17 @@ def stride_conv(in_channels, out_channels, indice_key=None):
 
 def nearest_neighbor_interpolate(unknown, known, known_feats):
     """
-    :param pts: (n, 4) tensor of the bxyz positions of the unknown features
-    :param ctr: (m, 4) tensor of the bxyz positions of the known features
-    :param ctr_feats: (m, C) tensor of features to be propigated
+    :param pts: (n, 4) tensor of the bxyz positions of the unknown features         [34114, 4]
+    :param ctr: (m, 4) tensor of the bxyz positions of the known features           [52913, 4]
+    :param ctr_feats: (m, C) tensor of features to be propigated                    [52913, 32]
     :return:
         new_features: (n, C) tensor of the features of the unknown features
     """
-    dist, idx = pointnet2_utils.three_nn(unknown, known)
-    dist_recip = 1.0 / (dist + 1e-8)
-    norm = torch.sum(dist_recip, dim=1, keepdim=True)
-    weight = dist_recip / norm
-    interpolated_feats = pointnet2_utils.three_interpolate(known_feats, idx, weight)
+    dist, idx = pointnet2_utils.three_nn(unknown, known)    # dist: [34114, 3], idx: [34114, 3]
+    dist_recip = 1.0 / (dist + 1e-8)                        # [34114, 3]
+    norm = torch.sum(dist_recip, dim=1, keepdim=True)       # [34114, 1]
+    weight = dist_recip / norm                              # 权重值 [34114, 3]
+    interpolated_feats = pointnet2_utils.three_interpolate(known_feats, idx, weight)        # [34114, 3]
 
     return interpolated_feats
 
@@ -194,7 +194,7 @@ class VxNet(nn.Module):
     def __init__(self, num_input_features):
         super(VxNet, self).__init__()
 
-        self.conv0 = double_conv(num_input_features, 16, 'subm0')
+        self.conv0 = double_conv(num_input_features, 16, 'subm0')   # in_channel: 4 out_channel: 16
 
         self.down0 = stride_conv(16, 32, 'down0')
         self.conv1 = double_conv(32, 32, 'subm1')
@@ -228,7 +228,7 @@ class VxNet(nn.Module):
         middle.append(x)
 
         out = self.extra_conv(x)
-        return out, middle
+        return out, middle      # out: [5, 200, 176]  middle: [20, 800, 704] [10, 400, 352] [5, 200, 176]
 
 class BEVNet(nn.Module):
     def __init__(self, in_features, num_filters=256):
@@ -279,7 +279,7 @@ class BEVNet(nn.Module):
         conv6 = x.clone()
         x = self.conv7(x)
         x = F.relu(self.bn7(x), inplace=True)
-        return x, conv6
+        return x, conv6         # x: [1, 256, 200, 176], conv6: [1, 256, 200, 176]
 
 
 

@@ -106,13 +106,13 @@ class SimpleVoxel(nn.Module):
         super(SimpleVoxel, self).__init__()
         self.name = name
         self.num_input_features = num_input_features
-
+    # 本质：求每个体素内每个特征的平均值
     def forward(self, features, num_voxels):
         #return features
-        # features: [concated_num_points, num_voxel_size, 3(4)]
-        # num_voxels: [concated_num_points]
+        # features: [concated_num_points, num_voxel_size, 3(4)]     # [15470, 5, 4]
+        # num_voxels: [concated_num_points]                         # [15470]
         points_mean = features[:, :, :self.num_input_features].sum(
             dim=1, keepdim=False) / num_voxels.type_as(features).view(-1, 1)
-        return points_mean.contiguous()
+        return points_mean.contiguous()                             # [15470, 4]
 
 

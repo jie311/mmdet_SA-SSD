@@ -1,9 +1,10 @@
 import argparse
 import sys
-sys.path.append('/home/billyhe/SA-SSD')
+# sys.path.append('/home/billyhe/SA-SSD')
 import torch
 import mmcv
-from mmcv.runner import load_checkpoint, parallel_test
+# from mmcv.runner import load_checkpoint, parallel_test        # wn update
+from mmcv.runner import load_checkpoint
 from mmcv.parallel import scatter, collate, MMDataParallel
 from mmdet.core.evaluation.kitti_eval import get_official_eval_result
 from mmdet.core import results2json, coco_eval
@@ -127,10 +128,10 @@ def main():
 
     cfg = mmcv.Config.fromfile(args.config)
     cfg.model.pretrained = None
-
+    # load dataset: cfg.data.val
     dataset = utils.get_dataset(cfg.data.val)
-    class_names = cfg.data.val.class_names
-
+    class_names = cfg.data.val.class_names          # ['Car']
+    # build model: cfg.model + cfg.test_cfg
     if args.gpus == 1:
         model = build_detector(
             cfg.model, train_cfg=None, test_cfg=cfg.test_cfg)

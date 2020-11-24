@@ -1,7 +1,7 @@
 from __future__ import division
 import argparse
 import sys
-sys.path.append('/home/billyhe/SA-SSD')
+# sys.path.append('/home/billyhe/SA-SSD')
 from mmcv.parallel import MMDataParallel, MMDistributedDataParallel
 from mmdet.datasets import build_dataloader
 from tools.env import get_root_logger, init_dist, set_random_seed

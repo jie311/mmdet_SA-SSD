@@ -36,7 +36,7 @@ def batch_processor(model, data):
 
 def train_one_epoch(model, optimizer, train_loader, lr_scheduler, lr_warmup_scheduler, accumulated_iter,
                     train_epoch, optim_cfg, rank, logger, log_buffer, log_interval):
-
+    # DEBUG时，修改num_workers = 0
     for i, data_batch in enumerate(train_loader):
 
         if lr_warmup_scheduler is not None and accumulated_iter <= lr_warmup_scheduler.T_max:

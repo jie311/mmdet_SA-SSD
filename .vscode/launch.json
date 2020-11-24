@@ -9,7 +9,11 @@
             "type": "python",
             "request": "launch",
             "program": "${file}",
-            "console": "integratedTerminal"
+            "console": "integratedTerminal",
+            "args": [
+                "./configs/car_cfg.py",
+                // "./work_dir/checkpoint_epoch_20.pth"
+            ]
         }
     ]
 }
