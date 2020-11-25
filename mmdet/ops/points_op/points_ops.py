@@ -202,11 +202,12 @@ def points_to_voxel(points,
         left_down = coors[3, 2, 1] * voxel_size + coors_range[:3]               # 左下点
     else:
         left_down = coors * voxel_size + coors_range[:3]                        # 左下点
-    structure_points[0] = left_down + .5 * voxel_size                           # 中点
-    structure_points[1] = left_down + np.array([0, 0, 1]) * voxel_size          # 左上
-    structure_points[2] = left_down + np.array([1, 1, 0]) * voxel_size          # 右下
+    structure_points[:,0,:] = left_down + .5 * voxel_size                           # 中点
+    structure_points[:,1,:] = left_down + np.array([0, 0, 1]) * voxel_size          # 左上
+    structure_points[:,2,:] = left_down + np.array([1, 1, 0]) * voxel_size          # 右下
 
     structure_points = _build_strcture_points(voxels, num_points_per_voxel, structure_points)   # [M, 3, ndim-1] ndim=4
+    # structure_points = structure_points.reshape((voxel_num-1)*3, 3)
 
     return voxels, coors, num_points_per_voxel, structure_points
 

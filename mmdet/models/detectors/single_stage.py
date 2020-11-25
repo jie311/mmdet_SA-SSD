@@ -52,7 +52,7 @@ class SingleStageDetector(BaseDetector, RPNTestMixin, BBoxTestMixin,
     def merge_second_batch(self, batch_args):       # 处理多个batch
         ret = {}
         for key, elems in batch_args.items():
-            if key in ['voxels', 'num_points', ]:
+            if key in ['voxels', 'num_points','structure_points' ]:
                 ret[key] = torch.cat(elems, dim=0)
             elif key in ['coordinates', ]:
                 coors = []
@@ -80,7 +80,7 @@ class SingleStageDetector(BaseDetector, RPNTestMixin, BBoxTestMixin,
         # step2: 
         vx = self.backbone(ret['voxels'], ret['num_points'])
         # step3:
-        x, conv6, point_misc = self.neck(vx, ret['coordinates'], batch_size, is_test=False)
+        x, conv6, point_misc = self.neck(vx, ret['coordinates'], ret['structure_points'], batch_size, is_test=False)
 
         losses = dict()
 

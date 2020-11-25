@@ -99,11 +99,20 @@ class SpMiddleFHD(nn.Module):
             aux_loss_reg = aux_loss_reg,
         )
     # neck 主要步骤
-    def forward(self, voxel_features, coors, batch_size, is_test=False):
+    def forward(self, voxel_features, coors, structure_points, batch_size, is_test=False):
         # voxel_features [15470, 4] coors [15470, 4] 其中voxel_features中四个特征分别是3个坐标+1个反射；coors的四个特征分别是batch id+体素中点坐标
-        points_mean = torch.zeros_like(voxel_features)      # points_mean 记录了batch id + 3维平均坐标
-        points_mean[:, 0] = coors[:, 0]                     # 获得batch id
-        points_mean[:, 1:] = voxel_features[:, :3]          # 获得每个体素的前三个特征：3个点云的平均坐标
+        
+        # enhance: structure_points [M, 3, ndim-1]
+
+        # points_mean = torch.zeros_like(voxel_features)      # points_mean 记录了batch id + 3维平均坐标
+        # points_mean[:, 0] = coors[:, 0]                     # 获得batch id
+        # points_mean[:, 1:] = voxel_features[:, :3]          # 获得每个体素的前三个特征：3个点云的平均坐标
+
+        M, N, D = structure_points.shape
+        batch_structure_points = torch.zeros((M, N, D+1))
+        batch_structure_points[:, :, 0] = coors[:, 0]
+        batch_structure_points[:, :, 1:] = structure_points
+        batch_structure_points = torch.reshape(batch_structure_points, (M * N, D + 1))
 
         coors = coors.int()
         x = spconv.SparseConvTensor(voxel_features, coors, self.sparse_shape, batch_size)       # 初始化SparseConvTensor
@@ -120,13 +129,17 @@ class SpMiddleFHD(nn.Module):
         else:
             # auxiliary network
             vx_feat, vx_nxyz = tensor2points(middle[0], (0, -40., -3.), voxel_size=(.1, .1, .2)) # vx_feat [52914, 32] vx_nxyz [52913, 4]
-            p0 = nearest_neighbor_interpolate(points_mean, vx_nxyz, vx_feat)    # p0 [34114, 32]
+            # p0 = nearest_neighbor_interpolate(points_mean, vx_nxyz, vx_feat)    # p0 [34114, 32]
+            p0 = nearest_neighbor_interpolate(batch_structure_points, vx_nxyz, vx_feat)    # p0 [34114, 32]
 
             vx_feat, vx_nxyz = tensor2points(middle[1], (0, -40., -3.), voxel_size=(.2, .2, .4))
-            p1 = nearest_neighbor_interpolate(points_mean, vx_nxyz, vx_feat)    # p1 [34114, 64]
+            # p1 = nearest_neighbor_interpolate(points_mean, vx_nxyz, vx_feat)    # p1 [34114, 64]
+            p1 = nearest_neighbor_interpolate(batch_structure_points, vx_nxyz, vx_feat)    # p1 [34114, 64]
 
             vx_feat, vx_nxyz = tensor2points(middle[2], (0, -40., -3.), voxel_size=(.4, .4, .8))
-            p2 = nearest_neighbor_interpolate(points_mean, vx_nxyz, vx_feat)    # p2 [34114, 64]
+            # p2 = nearest_neighbor_interpolate(points_mean, vx_nxyz, vx_feat)    # p2 [34114, 64]
+            p2 = nearest_neighbor_interpolate(batch_structure_points, vx_nxyz, vx_feat)    # p2 [34114, 64]
+
             # 均为全连接层
             pointwise = self.point_fc(torch.cat([p0, p1, p2], dim=-1))      # pointwise [34114, 64]
             point_cls = self.point_cls(pointwise)                           # point_cls [34114, 1]
