@@ -209,7 +209,7 @@ class KittiLiDAR(Dataset):
             gt_bboxes, points = self.augmentor.global_scaling(gt_bboxes, points)
 
         if isinstance(self.generator, VoxelGenerator):
-            voxels, coordinates, num_points = self.generator.generate(points)
+            voxels, coordinates, num_points = self.generator.generate(points)       # voxel_generator.py generate
             voxel_size = self.generator.voxel_size
             pc_range = self.generator.point_cloud_range
             grid_size = self.generator.grid_size

@@ -102,8 +102,8 @@ class SpMiddleFHD(nn.Module):
     def forward(self, voxel_features, coors, batch_size, is_test=False):
         # voxel_features [15470, 4] coors [15470, 4] 其中voxel_features中四个特征分别是3个坐标+1个反射；coors的四个特征分别是batch id+体素中点坐标
         points_mean = torch.zeros_like(voxel_features)      # points_mean 记录了batch id + 3维平均坐标
-        points_mean[:, 0] = coors[:, 0]     # 获得batch id
-        points_mean[:, 1:] = voxel_features[:, :3]      # 获得每个体素的前三个特征：3个点云的平均坐标
+        points_mean[:, 0] = coors[:, 0]                     # 获得batch id
+        points_mean[:, 1:] = voxel_features[:, :3]          # 获得每个体素的前三个特征：3个点云的平均坐标
 
         coors = coors.int()
         x = spconv.SparseConvTensor(voxel_features, coors, self.sparse_shape, batch_size)       # 初始化SparseConvTensor
