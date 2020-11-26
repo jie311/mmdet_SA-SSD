@@ -110,7 +110,8 @@ class SpMiddleFHD(nn.Module):
 
         M, N, D = structure_points.shape
         batch_structure_points = torch.zeros((M, N, D+1))
-        batch_structure_points[:, :, 0] = coors[:, 0]
+        # batch_structure_points[:, :, 0] = coors[:, 0]
+        batch_structure_points[:, :, 0] = (coors[:, 0].repeat(3,1)).T
         batch_structure_points[:, :, 1:] = structure_points
         batch_structure_points = torch.reshape(batch_structure_points, (M * N, D + 1))
 

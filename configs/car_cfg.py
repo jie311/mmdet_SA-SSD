@@ -216,7 +216,7 @@ log_config = dict(interval=20)
 total_epochs = 20
 dist_params = dict(backend='nccl')
 log_level = 'INFO'
-work_dir = './work_dir'
+work_dir = './work_dir/enhance_test'
 load_from = None
 resume_from = None
 workflow = [('train', 1)]

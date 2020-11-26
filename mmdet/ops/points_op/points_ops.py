@@ -102,6 +102,7 @@ def _points_to_voxel_kernel(points,
             num_points_per_voxel[voxelidx] += 1
     return voxel_num
 
+# @numba.jit(nopython=True)
 def _build_strcture_points(voxels, num_points_per_voxel, structure_points):
     """
     Each voxel builds three points to represent the voxel's structure
@@ -115,22 +116,24 @@ def _build_strcture_points(voxels, num_points_per_voxel, structure_points):
         structure_points: [M, 3, ndim-1]
     """
 
-    mean_points = voxels[:, :, :3].sum(dim=1, keepdim=False) / num_points_per_voxel.type_as(voxels).view(-1, 1)     # [M, ndim-1]
-    
+    # mean_points = voxels[:, :, :3].sum(dim=1, keepdim=False) / num_points_per_voxel.type_as(voxels).view(-1, 1)     # [M, ndim-1]
+    mean_points = np.sum(voxels[:, :, :3], axis=1, keepdims=False) / num_points_per_voxel[:,None]       # (17727, 3)
+
     M = voxels.shape[0]
     for i in range(M):
         initial_points = structure_points[i]                # [3, ndim-1]
         mean_point = mean_points[i]                         # [ndim-1]
 
         move_vectors = initial_points - mean_point          # [3, ndim-1]
-        move_length = np.sqrt((move_vectors**2).sum(dim=1, keepdim=False))  # [3]
+        move_length = np.sqrt(np.sum(move_vectors**2, axis=1, keepdims=False))
+        # move_length = np.sqrt((move_vectors**2).sum(dim=1, keepdim=False))  # [3]
         move_weight = move_length / move_length.sum()       # [3]
         # move_dir = move_vectors / move_length             # [3, ndim-1]
         # norm
         # move_length = move_length / move_length.sum()     # [3]
         # move_dir * move_length + initial_points
 
-        structure_points[i] = move_vectors / move_length.sum() * move_weight * 0.1 + initial_points     # [3, ndim-1]
+        structure_points[i] = move_vectors / move_length[:,None] * move_weight[:,None] * np.array([0.1, 0.1, 0.2]) + initial_points     # [3, ndim-1]
     
     return structure_points
 
@@ -197,11 +200,11 @@ def points_to_voxel(points,
     #     voxels[:, :, :3].sum(axis=1, keepdims=True)/num_points_per_voxel.reshape(-1, 1, 1)
 
     # enhanced
-    structure_points = np.zeros(shape=(max_voxels, 3, 3), dtype=np.int32)       # [20000, 3, 3]
+    structure_points = np.zeros(shape=(voxel_num, 3, 3), dtype=points.dtype)           # [17727, 3, 3]
     if reverse_index:      
-        left_down = coors[3, 2, 1] * voxel_size + coors_range[:3]               # 左下点
+        left_down = coors[:,[2, 1, 0]] * voxel_size + coors_range[:3]               # 左下点 [17727, 3]
     else:
-        left_down = coors * voxel_size + coors_range[:3]                        # 左下点
+        left_down = coors * voxel_size + coors_range[:3]                            # 左下点
     structure_points[:,0,:] = left_down + .5 * voxel_size                           # 中点
     structure_points[:,1,:] = left_down + np.array([0, 0, 1]) * voxel_size          # 左上
     structure_points[:,2,:] = left_down + np.array([1, 1, 0]) * voxel_size          # 右下
