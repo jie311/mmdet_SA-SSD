@@ -114,6 +114,8 @@ class SpMiddleFHD(nn.Module):
         batch_structure_points[:, :, 0] = (coors[:, 0].repeat(3,1)).T
         batch_structure_points[:, :, 1:] = structure_points
         batch_structure_points = torch.reshape(batch_structure_points, (M * N, D + 1))
+        if torch.cuda.is_available():
+            batch_structure_points = batch_structure_points.cuda()
 
         coors = coors.int()
         x = spconv.SparseConvTensor(voxel_features, coors, self.sparse_shape, batch_size)       # 初始化SparseConvTensor
@@ -146,7 +148,7 @@ class SpMiddleFHD(nn.Module):
             point_cls = self.point_cls(pointwise)                           # point_cls [34114, 1]
             point_reg = self.point_reg(pointwise)                           # point_cls [34114, 3]
 
-            return x, conv6, (points_mean, point_cls, point_reg)
+            return x, conv6, (batch_structure_points, point_cls, point_reg)
 
 
 def single_conv(in_channels, out_channels, indice_key=None):

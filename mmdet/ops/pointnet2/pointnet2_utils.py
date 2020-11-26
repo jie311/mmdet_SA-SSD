@@ -13,8 +13,8 @@ class ThreeNN(Function):
         """
         Find the three nearest neighbors of unknown in known
         :param ctx:
-        :param unknown: (N, 3)
-        :param known: (M, 3)
+        :param unknown: (N, 3)                  # torch.Size([53181, 4])
+        :param known: (M, 3)                    # torch.Size([34606, 4])
         :return:
             dist: (N, 3) l2 distance to the three nearest neighbors
             idx: (N, 3) index of 3 nearest neighbors
@@ -22,8 +22,8 @@ class ThreeNN(Function):
         assert unknown.is_contiguous()
         assert known.is_contiguous()
 
-        N, _ = unknown.size()
-        m = known.size(0)
+        N, _ = unknown.size()                   # 53181
+        m = known.size(0)                       # 34606
         dist2 = torch.cuda.FloatTensor(N, 3)  
         idx = torch.cuda.IntTensor(N, 3)
 
