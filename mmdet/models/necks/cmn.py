@@ -103,19 +103,11 @@ class SpMiddleFHD(nn.Module):
         # voxel_features [15470, 4] coors [15470, 4] 其中voxel_features中四个特征分别是3个坐标+1个反射；coors的四个特征分别是batch id+体素中点坐标
         
         # enhance: structure_points [M, 3, ndim-1]
-
+        
+        # points_mean [M, 4]
         # points_mean = torch.zeros_like(voxel_features)      # points_mean 记录了batch id + 3维平均坐标
         # points_mean[:, 0] = coors[:, 0]                     # 获得batch id
         # points_mean[:, 1:] = voxel_features[:, :3]          # 获得每个体素的前三个特征：3个点云的平均坐标
-
-        M, N, D = structure_points.shape
-        batch_structure_points = torch.zeros((M, N, D+1))
-        # batch_structure_points[:, :, 0] = coors[:, 0]
-        batch_structure_points[:, :, 0] = (coors[:, 0].repeat(3,1)).T
-        batch_structure_points[:, :, 1:] = structure_points
-        batch_structure_points = torch.reshape(batch_structure_points, (M * N, D + 1))
-        if torch.cuda.is_available():
-            batch_structure_points = batch_structure_points.cuda()
 
         coors = coors.int()
         x = spconv.SparseConvTensor(voxel_features, coors, self.sparse_shape, batch_size)       # 初始化SparseConvTensor
@@ -130,6 +122,24 @@ class SpMiddleFHD(nn.Module):
         if is_test:
             return x, conv6
         else:
+            # structure_points [M, 3, 3]
+            M, N, D = structure_points.shape
+
+            # batch_structure_points [M, 4, 4]
+            # 4: structure points * 3 + mean point
+            # 4: batch size, x, y, z
+            batch_structure_points = torch.zeros((M, N+1, D+1))
+
+            # batch_structure_points[:, :, 0] = coors[:, 0]
+            batch_structure_points[:, :, 0] = (coors[:, 0].repeat(4,1)).T
+            batch_structure_points[:, :3, 1:] = structure_points
+            # batch_structure_points[:, 3, 0] = coors[:, 0]
+            batch_structure_points[:, 3, 1:] = voxel_features[:, :3]
+
+            batch_structure_points = torch.reshape(batch_structure_points, (M * (N+1), D + 1))
+            if torch.cuda.is_available():
+                batch_structure_points = batch_structure_points.cuda()
+
             # auxiliary network
             vx_feat, vx_nxyz = tensor2points(middle[0], (0, -40., -3.), voxel_size=(.1, .1, .2)) # vx_feat [52914, 32] vx_nxyz [52913, 4]
             # p0 = nearest_neighbor_interpolate(points_mean, vx_nxyz, vx_feat)    # p0 [34114, 32]

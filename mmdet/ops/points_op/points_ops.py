@@ -102,7 +102,7 @@ def _points_to_voxel_kernel(points,
             num_points_per_voxel[voxelidx] += 1
     return voxel_num
 
-# @numba.jit(nopython=True)
+@numba.jit(nopython=True)
 def _build_strcture_points(voxels, num_points_per_voxel, structure_points):
     """
     Each voxel builds three points to represent the voxel's structure
@@ -133,7 +133,7 @@ def _build_strcture_points(voxels, num_points_per_voxel, structure_points):
         # move_length = move_length / move_length.sum()     # [3]
         # move_dir * move_length + initial_points
 
-        structure_points[i] = move_vectors / move_length[:,None] * move_weight[:,None] * np.array([0.1, 0.1, 0.2]) + initial_points     # [3, ndim-1]
+        structure_points[i] = move_vectors / move_length[:,None] * move_weight[:,None] * np.array([0.15, 0.15, 0.3]) + initial_points     # [3, ndim-1]
     
     return structure_points
 

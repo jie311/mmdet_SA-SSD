@@ -52,7 +52,7 @@ class SingleStageDetector(BaseDetector, RPNTestMixin, BBoxTestMixin,
     def merge_second_batch(self, batch_args):       # 处理多个batch
         ret = {}
         for key, elems in batch_args.items():
-            if key in ['voxels', 'num_points','structure_points' ]:
+            if key in ['voxels', 'num_points','structure_points']:
                 ret[key] = torch.cat(elems, dim=0)
             elif key in ['coordinates', ]:
                 coors = []
@@ -115,7 +115,7 @@ class SingleStageDetector(BaseDetector, RPNTestMixin, BBoxTestMixin,
         ret = self.merge_second_batch(kwargs)                   # ret['voxels'] [15470, 5, 4] 15470个体素，每个体素最多5个点 
                                                                 # ret['num_points'] [15470] 记录每个体素包含的点云个数                                                
         vx = self.backbone(ret['voxels'], ret['num_points'])    # vx [15470, 4] 每个体素的特征  三个坐标和一个反射，体素内所有点云的平均值
-        (x, conv6) = self.neck(vx, ret['coordinates'], batch_size, is_test=True)    # ret['coordinates'] [15470, 4]
+        (x, conv6) = self.neck(vx, ret['coordinates'], ret['structure_points'], batch_size, is_test=True)    # ret['coordinates'] [15470, 4]
 
         rpn_outs = self.rpn_head.forward(x)
 

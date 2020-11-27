@@ -317,7 +317,7 @@ class KittiLiDAR(Dataset):
             points = read_lidar(osp.join(self.lidar_prefix, '%06d.bin' % sample_id))
 
         if isinstance(self.generator, VoxelGenerator):
-            voxels, coordinates, num_points = self.generator.generate(points)
+            voxels, coordinates, num_points, structure_points = self.generator.generate(points)
             voxel_size = self.generator.voxel_size
             pc_range = self.generator.point_cloud_range
             grid_size = self.generator.grid_size
@@ -332,6 +332,7 @@ class KittiLiDAR(Dataset):
             data['voxels'] = DC(to_tensor(voxels.astype(np.float32)))
             data['coordinates'] = DC(to_tensor(coordinates))
             data['num_points'] = DC(to_tensor(num_points))
+            data['structure_points'] = DC(to_tensor(structure_points))
 
             if self.anchor_area_threshold >= 0 and self.anchors is not None:
                 dense_voxel_map = sparse_sum_for_anchors_mask(
