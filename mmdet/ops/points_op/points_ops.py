@@ -102,7 +102,7 @@ def _points_to_voxel_kernel(points,
             num_points_per_voxel[voxelidx] += 1
     return voxel_num
 
-@numba.jit(nopython=True)
+# @numba.jit(nopython=True)
 def _build_strcture_points(voxels, num_points_per_voxel, structure_points):
     """
     Each voxel builds three points to represent the voxel's structure
