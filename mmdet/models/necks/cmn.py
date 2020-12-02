@@ -119,6 +119,8 @@ class SpMiddleFHD(nn.Module):
 
         x, conv6 = self.fcn(x)  # x: [1, 256, 200, 176], conv6: [1, 256, 200, 176]
         
+        return x, conv6
+        
         if is_test:
             return x, conv6
         else:

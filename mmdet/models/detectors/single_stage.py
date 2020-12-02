@@ -80,12 +80,14 @@ class SingleStageDetector(BaseDetector, RPNTestMixin, BBoxTestMixin,
         # step2: 
         vx = self.backbone(ret['voxels'], ret['num_points'])
         # step3:
-        x, conv6, point_misc = self.neck(vx, ret['coordinates'], ret['structure_points'], batch_size, is_test=False)
+        # x, conv6, point_misc = self.neck(vx, ret['coordinates'], ret['structure_points'], batch_size, is_test=False)
+        x, conv6= self.neck(vx, ret['coordinates'], ret['structure_points'], batch_size, is_test=False)
+
 
         losses = dict()
 
-        aux_loss = self.neck.aux_loss(*point_misc, gt_bboxes=ret['gt_bboxes'])
-        losses.update(aux_loss)
+        # aux_loss = self.neck.aux_loss(*point_misc, gt_bboxes=ret['gt_bboxes'])
+        # losses.update(aux_loss)
 
         # RPN forward and loss
         if self.with_rpn:
