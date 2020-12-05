@@ -11,6 +11,10 @@ from mmcv import Config
 from mmdet.datasets import get_dataset
 from mmdet.models import build_detector
 from tools.train_utils.optimization import build_optimizer, build_scheduler
+# import warnings
+# from numba.errors import NumbaPerformanceWarning
+
+# warnings.filterwarnings("ignore", category=NumbaPerformanceWarning)
 
 def parse_args():
     parser = argparse.ArgumentParser(description='Train a detector')
