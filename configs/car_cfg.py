@@ -220,7 +220,7 @@ log_config = dict(interval=20)
 total_epochs = 20
 dist_params = dict(backend='nccl')
 log_level = 'INFO'
-work_dir = './work_dir/3class'
+work_dir = ''
 load_from = None
 resume_from = None
 workflow = [('train', 1)]
