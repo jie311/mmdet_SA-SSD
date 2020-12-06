@@ -15,7 +15,7 @@ model = dict(
     ),
     bbox_head=dict(
         type='SSDRotateHead',
-        num_class=3, #len(['Car', 'Pedestrian', 'Cyclist']),
+        num_class=1, #len(['Car', 'Pedestrian', 'Cyclist']),
         num_output_filters=256,
         num_anchor_per_loc=2,
         use_sigmoid_cls=True,
@@ -42,16 +42,16 @@ train_cfg = dict(
                 neg_iou_thr=0.45,
                 min_pos_iou=0.45,  # this one is to limit the force assignment
             ),
-            Pedestrian=dict(
-                pos_iou_thr=0.5,
-                neg_iou_thr=0.35,
-                min_pos_iou=0.35,  # this one is to limit the force assignment
-            ),
-            Cyclist=dict(
-                pos_iou_thr=0.5,
-                neg_iou_thr=0.35,
-                min_pos_iou=0.35,  # this one is to limit the force assignment
-            ),
+            # Pedestrian=dict(
+            #     pos_iou_thr=0.5,
+            #     neg_iou_thr=0.35,
+            #     min_pos_iou=0.35,  # this one is to limit the force assignment
+            # ),
+            # Cyclist=dict(
+            #     pos_iou_thr=0.5,
+            #     neg_iou_thr=0.35,
+            #     min_pos_iou=0.35,  # this one is to limit the force assignment
+            # ),
             ignore_iof_thr=-1,
             similarity_fn='NearestIouSimilarity'
         ),
@@ -86,7 +86,7 @@ img_norm_cfg = dict(
     mean=[123.675, 116.28, 103.53], std=[58.395, 57.12, 57.375], to_rgb=True)
 data = dict(
     # imgs_per_gpu=2,
-    imgs_per_gpu=1,
+    imgs_per_gpu=2,
     workers_per_gpu=4,
     train=dict(
         type=dataset_type,
@@ -100,19 +100,15 @@ data = dict(
         with_mask=False,
         with_label=True,
         with_point=True,
-        # class_names = ['Car'],#, 'Pedestrian', 'Cyclist'],
-        class_names = ['Car', 'Pedestrian', 'Cyclist'],
+        class_names = ['Car'],#, 'Pedestrian', 'Cyclist'],
         augmentor=dict(
             type='PointAugmentor',
             root_path=data_root,
             # info_path=data_root + 'kitti_dbinfos_train.pkl',      # wn update
             info_path=data_root + 'kitti_dbinfos_trainval.pkl',
-            # sample_classes=['Car'],#, 'Pedestrian', 'Cyclist'],
-            sample_classes=['Car', 'Pedestrian', 'Cyclist'],
-            # min_num_points=[5],# 5, 5],
-            min_num_points=[5, 5, 5],
-            # sample_max_num=[15],# 10, 10],
-            sample_max_num=[15, 10, 10],
+            sample_classes=['Car'],#, 'Pedestrian', 'Cyclist'],
+            min_num_points=[5],# 5, 5],
+            sample_max_num=[15],# 10, 10],
             removed_difficulties=[-1],
             global_rot_range=[-0.78539816, 0.78539816],
             gt_rot_range=[-0.78539816, 0.78539816],
@@ -134,20 +130,20 @@ data = dict(
                 anchor_offsets=[0.2, -39.8, -1.78],
                 rotations=[0, 1.57],
             ),
-            Pedestrian=dict(
-                type='AnchorGeneratorStride',
-                sizes=[0.6, 0.8, 1.73],
-                anchor_strides=[0.4, 0.4, 1.0],
-                anchor_offsets=[0.2, -39.8, -1.78],
-                rotations=[0, 1.57],
-            ),
-            Cyclist=dict(
-                type='AnchorGeneratorStride',
-                sizes=[0.6, 1.76, 1.73],
-                anchor_strides=[0.4, 0.4, 1.0],
-                anchor_offsets=[0.2, -39.8, -1.78],
-                rotations=[0, 1.57],
-            )
+            # Pedestrian=dict(
+            #     type='AnchorGeneratorStride',
+            #     sizes=[0.6, 0.8, 1.73],
+            #     anchor_strides=[0.4, 0.4, 1.0],
+            #     anchor_offsets=[0.2, -39.8, -1.78],
+            #     rotations=[0, 1.57],
+            # ),
+            # Cyclist=dict(
+            #     type='AnchorGeneratorStride',
+            #     sizes=[0.6, 1.76, 1.73],
+            #     anchor_strides=[0.4, 0.4, 1.0],
+            #     anchor_offsets=[0.2, -39.8, -1.78],
+            #     rotations=[0, 1.57],
+            # )
         ),
         anchor_area_threshold=1,
         out_size_factor=8,
@@ -165,7 +161,7 @@ data = dict(
         with_mask=False,
         with_label=False,
         with_point=True,
-        class_names=['Car', 'Pedestrian', 'Cyclist'],
+        class_names=['Car'],# 'Pedestrian', 'Cyclist'],
         # generator：生成voxel的配置
         generator=dict(
             type='VoxelGenerator',
@@ -182,20 +178,20 @@ data = dict(
                 anchor_offsets=[0.2, -39.8, -1.78],
                 rotations=[0, 1.57],
             ),
-            Pedestrian=dict(
-                type='AnchorGeneratorStride',
-                sizes=[0.6, 0.8, 1.73],
-                anchor_strides=[0.4, 0.4, 1.0],
-                anchor_offsets=[0.2, -39.8, -1.78],
-                rotations=[0, 1.57],
-            ),
-            Cyclist=dict(
-                type='AnchorGeneratorStride',
-                sizes=[0.6, 1.76, 1.73],
-                anchor_strides=[0.4, 0.4, 1.0],
-                anchor_offsets=[0.2, -39.8, -1.78],
-                rotations=[0, 1.57],
-            )
+            # Pedestrian=dict(
+            #     type='AnchorGeneratorStride',
+            #     sizes=[0.6, 0.8, 1.73],
+            #     anchor_strides=[0.4, 0.4, 1.0],
+            #     anchor_offsets=[0.2, -39.8, -1.78],
+            #     rotations=[0, 1.57],
+            # ),
+            # Cyclist=dict(
+            #     type='AnchorGeneratorStride',
+            #     sizes=[0.6, 1.76, 1.73],
+            #     anchor_strides=[0.4, 0.4, 1.0],
+            #     anchor_offsets=[0.2, -39.8, -1.78],
+            #     rotations=[0, 1.57],
+            # )
         ),
         anchor_area_threshold=1,
         out_size_factor=8,
@@ -220,7 +216,7 @@ log_config = dict(interval=20)
 total_epochs = 20
 dist_params = dict(backend='nccl')
 log_level = 'INFO'
-work_dir = ''
+work_dir = './work_dir/origin'
 load_from = None
 resume_from = None
 workflow = [('train', 1)]
