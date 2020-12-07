@@ -34,8 +34,9 @@ def single_test(model, data_loader, saveto=None, class_names=['Car']):
 
         image_shape = (375,1242)
         for re in results:
-            img_idx = re['image_idx']
+            img_idx = re['image_idx'][0]
 
+            # 1. 当前图像存在对象
             if re["bbox"].shape[0] != 0:
             # if re['bbox'] is not None:
                 # box2d = re['bbox']
@@ -78,12 +79,14 @@ def single_test(model, data_loader, saveto=None, class_names=['Car']):
         
                     # anno = {n: np.stack(v) for n, v in anno.items()}
                     # annos.append(anno)
-                else:
-                    if saveto is not None:
-                        of_path = os.path.join(saveto, '%06d.txt' % img_idx)
-                        f = open(of_path, 'w+')
-                        f.close()
+                # else:
+                #     if saveto is not None:
+                #         of_path = os.path.join(saveto, '%06d.txt' % img_idx)
+                #         f = open(of_path, 'w+')
+                #         f.close()
                     # annos.append(kitti.empty_result_anno())
+            
+            # 2. 当前图像不存在对象
             else:
                 if saveto is not None:
                     of_path = os.path.join(saveto, '%06d.txt' % img_idx)
