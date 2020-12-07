@@ -2,6 +2,7 @@ __pycache__/
 .idea
 spconv
 work_dir
+.vscode
 
 # Distribution / packaging
 .Python
