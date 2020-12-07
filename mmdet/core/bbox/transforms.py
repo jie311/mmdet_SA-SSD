@@ -231,7 +231,9 @@ def kitti_bbox2results(boxes_lidar, scores, labels, meta, class_names=None):
             or boxes_lidar is None \
                 or len(boxes_lidar) == 0:
 
-        return kitti.empty_result_anno()
+        empty_re = kitti.empty_result_anno()
+        empty_re.update({'image_idx': [int(sample_id)]})
+        return empty_re
 
     hehe = kitti.get_start_result_anno()
     hehe.update({'image_idx': []})
