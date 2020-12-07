@@ -231,7 +231,10 @@ def kitti_bbox2results(boxes_lidar, scores, labels, meta, class_names=None):
             or boxes_lidar is None \
                 or len(boxes_lidar) == 0:
 
-        return kitti.empty_result_anno()
+        # wn modify
+        empty_re = kitti.empty_result_anno()
+        empty_re.update({'image_idx': [sample_id]})
+        return empty_re
 
     hehe = kitti.get_start_result_anno()
     hehe.update({'image_idx': []})
@@ -239,14 +242,19 @@ def kitti_bbox2results(boxes_lidar, scores, labels, meta, class_names=None):
     boxes_lidar[:, -1] = limit_period(
         boxes_lidar[:, -1], offset=0.5, period=np.pi * 2,
     )
+
     boxes_cam = np.zeros_like(boxes_lidar)
     boxes_cam[:, :3] = project_velo_to_rect(boxes_lidar[:, :3], calib)
     boxes_cam[:, 3:] = boxes_lidar[:, [4, 5, 3, 6]]
+    
     corners_cam = center_to_corner_box3d(boxes_cam, origin=[0.5, 1.0, 0.5], axis=1)
     corners_rgb = project_rect_to_image(corners_cam, calib)
+
     minxy = np.min(corners_rgb, axis=1)
     maxxy = np.max(corners_rgb, axis=1)
+
     box2d_rgb = np.concatenate([minxy, maxxy], axis=1)
+
     alphas = -np.arctan2(-boxes_lidar[:, 1], boxes_lidar[:, 0]) + boxes_lidar[:, 6]
 
     for i, (lb, score, box3d, box2d, alpha) in enumerate(zip(labels, scores, boxes_cam, box2d_rgb, alphas)):
@@ -274,6 +282,4 @@ def kitti_bbox2results(boxes_lidar, scores, labels, meta, class_names=None):
         return kitti.empty_result_anno()
 
     return hehe
-
-
 
