@@ -9,12 +9,11 @@
 ## Visualization KITTI Dataset
 
 #### Function
-Draw 2d and 3d boxes on image. 
-
-Show all LiDAR points. Draw 3d box in LiDAR point cloud.
+- Draw 2d and 3d boxes on image. 
+- Show all LiDAR points. Draw 3d box in LiDAR point cloud.
 
 #### Script
-Please update GT_ROOT_DIR as your KITTI path
+Please update `GT_ROOT_DIR` as your KITTI path
 ```
 python visualize/kitti_object.py
 ```
