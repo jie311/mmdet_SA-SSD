@@ -6,21 +6,29 @@
 
 [KITTI可视化](https://blog.csdn.net/weixin_38362784/article/details/109566696)
 
-## Visualization
+## Visualization KITTI Dataset
+Draw 2d and 3d boxes on image. 
+
+Show all LiDAR points. Draw 3d box in LiDAR point cloud.
 ```
 python visualize/kitti_object.py
 ```
 
-## Train & Eval
+## Train
 
 Train Model with single GPU
 ```
 python ./tools/train.py ./configs/car_cfg.py
 ```
 
+## Eval
 Eval Model with single GPU
 ```
 python ./tools/test.py ./configs/car_cfg.py ./work_dir/checkpoint_epoch_20.pth 
+```
+Output the test result [txt format]
+```
+python ./tools/test.py ./configs/car_cfg.py ./work_dir/checkpoint_epoch_20.pth --out ./work_dir/eval_result
 ```
 
 
