@@ -15,6 +15,7 @@ import sys
 import numpy as np
 import cv2
 from PIL import Image
+import argparse
 # BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 # ROOT_DIR = os.path.dirname(BASE_DIR)
 # sys.path.append(os.path.join(ROOT_DIR, 'mayavi'))
@@ -142,7 +143,7 @@ def draw_gt_boxes3d(gt_boxes3d, fig, color=(1,1,1), line_width=1, draw_text=True
 class kitti_object(object):
     '''Load and parse object data into a usable format.'''
     
-    def __init__(self, root_dir, split='training'):
+    def __init__(self, root_dir, pred_dir=None, split='training'):
         '''root_dir contains training and testing folders'''
         self.root_dir = root_dir
         self.split = split
@@ -160,6 +161,8 @@ class kitti_object(object):
         self.calib_dir = os.path.join(self.split_dir, 'calib')
         self.lidar_dir = os.path.join(self.split_dir, 'velodyne')
         self.label_dir = os.path.join(self.split_dir, 'label_2')
+        if pred_dir != None:
+            self.pred_dir = pred_dir                                            # store txt file
 
     def __len__(self):
         return self.num_samples
@@ -183,6 +186,19 @@ class kitti_object(object):
         assert(idx<self.num_samples and self.split=='training') 
         label_filename = os.path.join(self.label_dir, '%06d.txt'%(idx))
         return utils.read_label(label_filename)
+    
+    def get_pred_objects(self, idx):
+        assert idx < self.num_samples
+        if self.pred_dir == None:
+            print ("No prediction path!")
+            return None
+        pred_filename = os.path.join(self.pred_dir, "%06d.txt" % (idx))
+        is_exist = os.path.exists(pred_filename)
+        if is_exist:
+            return utils.read_label(pred_filename)
+        else:
+            print ("No prediction file: %s" % pred_filename)
+            return None
         
     def get_depth_map(self, idx):
         pass
@@ -239,19 +255,35 @@ def viz_kitti_video():
         raw_input()
     return
 
-def show_image_with_boxes(img, objects, calib, show3d=True):
+def show_image_with_boxes(img, objects, calib, show3d=True, objects_pred=None):
     ''' Show image with 2D bounding boxes '''
     img1 = np.copy(img) # for 2d bbox
     img2 = np.copy(img) # for 3d bbox
+    type_list = ["Pedestrian", "Car", "Cyclist"]
+
+    # for ground truth
+    color = (0,255,0)
     for obj in objects:
         if obj.type=='DontCare':continue
-        cv2.rectangle(img1, (int(obj.xmin),int(obj.ymin)),
-            (int(obj.xmax),int(obj.ymax)), (0,255,0), 2)
+        cv2.rectangle(img1, (int(obj.xmin),int(obj.ymin)), (int(obj.xmax),int(obj.ymax)), color, 2)
         box3d_pts_2d, box3d_pts_3d = utils.compute_box_3d(obj, calib.P2)
-        img2 = utils.draw_projected_box3d(img2, box3d_pts_2d)
+        img2 = utils.draw_projected_box3d(img2, box3d_pts_2d)  
+
+    # for prediction
+    if objects_pred is not None:
+        color = (255, 0, 0)
+        for obj in objects_pred:
+            if obj.type not in type_list: continue
+            cv2.rectangle(img1, (int(obj.xmin), int(obj.ymin)), (int(obj.xmax), int(obj.ymax)), color, 1)
+            box3d_pts_2d, box3d_pts_3d = utils.compute_box_3d(obj, calib.P2)
+            img2 = utils.draw_projected_box3d(img2, box3d_pts_2d)
+        
     Image.fromarray(img1).show()
     if show3d:
         Image.fromarray(img2).show()
+
+    # cv2.imshow("with_bbox", img1)
+    # cv2.imwrite("imgs/" + str(name) + ".png", img1)
 
 def get_lidar_in_image_fov(pc_velo, calib, xmin, ymin, xmax, ymax,
                            return_more=False, clip_distance=2.0):
@@ -269,7 +301,7 @@ def get_lidar_in_image_fov(pc_velo, calib, xmin, ymin, xmax, ymax,
         return imgfov_pc_velo
 
 def show_lidar_with_boxes(pc_velo, objects, calib,
-                          img_fov=False, img_width=None, img_height=None): 
+                          img_fov=False, img_width=None, img_height=None, objects_pred=None): 
     ''' Show all LiDAR points.
         Draw 3d box in LiDAR point cloud (in velo coord system) '''
     if 'mlab' not in sys.modules: import mayavi.mlab as mlab
@@ -284,6 +316,7 @@ def show_lidar_with_boxes(pc_velo, objects, calib,
         print(('FOV point num: ', pc_velo.shape[0]))
     draw_lidar(pc_velo, fig=fig)
 
+    color = (0, 1, 0)
     for obj in objects:
         if obj.type=='DontCare':continue
         # Draw 3d bounding box
@@ -297,9 +330,29 @@ def show_lidar_with_boxes(pc_velo, objects, calib,
         ori3d_pts_3d_velo = utils.project_rect_to_velo(ori3d_pts_3d, calib)
         x1,y1,z1 = ori3d_pts_3d_velo[0,:]
         x2,y2,z2 = ori3d_pts_3d_velo[1,:]
-        draw_gt_boxes3d([box3d_pts_3d_velo], fig=fig)
+        draw_gt_boxes3d([box3d_pts_3d_velo], fig=fig, color=color)
         mlab.plot3d([x1, x2], [y1, y2], [z1,z2], color=(0.5,0.5,0.5),
             tube_radius=None, line_width=1, figure=fig)
+    
+    # for prediction
+    if objects_pred is not None:
+        color = (1, 0, 0)
+        for obj in objects_pred:
+            if obj.type == "DontCare":
+                continue
+            # Draw 3d bounding box
+            box3d_pts_2d, box3d_pts_3d = utils.compute_box_3d(obj, calib.P2)
+            box3d_pts_3d_velo = utils.project_rect_to_velo(box3d_pts_3d, calib)
+            print("box3d_pts_3d_velo:")
+            print(box3d_pts_3d_velo)
+            draw_gt_boxes3d([box3d_pts_3d_velo], fig=fig, color=color)
+            # Draw heading arrow
+            ori3d_pts_2d, ori3d_pts_3d = utils.compute_orientation_3d(obj, calib.P2)
+            ori3d_pts_3d_velo = utils.project_rect_to_velo(ori3d_pts_3d, calib)
+            x1, y1, z1 = ori3d_pts_3d_velo[0, :]
+            x2, y2, z2 = ori3d_pts_3d_velo[1, :]
+            mlab.plot3d([x1, x2],[y1, y2],[z1, z2],color=color,tube_radius=None,
+                line_width=1, figure=fig)
     mlab.show(1)
 
 def show_lidar_on_image(pc_velo, img, calib, img_width, img_height):
@@ -323,9 +376,10 @@ def show_lidar_on_image(pc_velo, img, calib, img_width, img_height):
     Image.fromarray(img).show() 
     return img
 
-def dataset_viz():
-    # dataset = kitti_object(os.path.join(ROOT_DIR, 'dataset/KITTI/object'))
-    dataset = kitti_object("/home/ch511/mmdet_dataset/KITTI")
+# Visualize GT 
+def dataset_viz(gt_dir):
+    dataset = kitti_object(gt_dir)
+
     for data_idx in range(len(dataset)):
         # Load data from dataset
         objects = dataset.get_label_objects(data_idx)
@@ -339,15 +393,61 @@ def dataset_viz():
         calib = dataset.get_calibration(data_idx)
 
         # Draw 2d and 3d boxes on image
-        # wn
-        show_image_with_boxes(img, objects, calib, False)
+        show_image_with_boxes(img, objects, calib, True)
         raw_input()
         print("start show lider")
         # Show all LiDAR points. Draw 3d box in LiDAR point cloud
         show_lidar_with_boxes(pc_velo, objects, calib, True, img_width, img_height)
         raw_input()
 
+# Visualize GT & Prediction
+def pred_viz(gt_dir, pred_dir):
+    dataset = kitti_object(gt_dir, pred_dir)
+
+    for pred_file in os.listdir(pred_dir):
+        if pred_file.split(".")[-1] != "txt":
+            continue
+        
+        data_idx = int(pred_file.split(".")[0])
+
+        # GET GT
+        objects = dataset.get_label_objects(data_idx)
+        objects[0].print_object()
+        img = dataset.get_image(data_idx)
+        img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB) 
+        img_height, img_width, img_channel = img.shape
+        print(('Image shape: ', img.shape))
+
+        pc_velo = dataset.get_lidar(data_idx)[:,0:3]
+        calib = dataset.get_calibration(data_idx)
+
+        # GET Prediction
+        objects_pred = dataset.get_pred_objects(data_idx)
+        if objects_pred == None:
+            continue
+
+        # Draw 2d and 3d boxes on image
+        show_image_with_boxes(img, objects, calib, True, objects_pred = objects_pred)
+        raw_input()
+        print("start show lider")
+        # Show all LiDAR points. Draw 3d box in LiDAR point cloud
+        show_lidar_with_boxes(pc_velo, objects, calib, True, img_width, img_height, objects_pred)
+        raw_input()
+
 if __name__=='__main__':
     import mayavi.mlab as mlab
     # from viz_util import draw_lidar_simple, draw_lidar, draw_gt_boxes3d
-    dataset_viz()
+
+    parser = argparse.ArgumentParser(description="KIITI Object Visualization")
+    parser.add_argument(
+        "-p", "--pred", action="store_true", help="show predict results"
+    )
+    args = parser.parse_args()
+
+    GT_ROOT_DIR = "/home/ch511/mmdet_dataset/KITTI"
+    PRED_DIR = "./work_dir/enhance_3class/eval_result"
+
+    if args.pred:
+        pred_viz(GT_ROOT_DIR, PRED_DIR)
+    else:
+        dataset_viz(GT_ROOT_DIR)

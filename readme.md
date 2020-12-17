@@ -1,18 +1,24 @@
 ## SA-SSD: Structure Aware Single-stage 3D Object Detection from Point Cloud (CVPR 2020) [\[paper\]](https://www4.comp.polyu.edu.hk/~cslzhang/paper/SA-SSD.pdf)
 
-# Update 20201109
+# Update 20201109 & 20201217
 
 [配置步骤](https://blog.csdn.net/weixin_38362784/article/details/109481359)
 
 [KITTI可视化](https://blog.csdn.net/weixin_38362784/article/details/109566696)
 
 ## Visualization KITTI Dataset
+
+#### Function
 Draw 2d and 3d boxes on image. 
 
 Show all LiDAR points. Draw 3d box in LiDAR point cloud.
+
+#### Script
+Please update GT_ROOT_DIR as your KITTI path
 ```
 python visualize/kitti_object.py
 ```
+TODO: Show examples
 
 ## Train
 
@@ -22,15 +28,25 @@ python ./tools/train.py ./configs/car_cfg.py
 ```
 
 ## Eval
-Eval Model with single GPU
+#### Eval Model with single GPU
+Instruction: [KITTI 3D目标检测的评估指标](https://blog.csdn.net/weixin_38362784/article/details/111321884)
 ```
 python ./tools/test.py ./configs/car_cfg.py ./work_dir/checkpoint_epoch_20.pth 
 ```
-Output the test result [txt format]
+#### Output the test result: 
+Instruction: [KITTI 3D数据集的标签说明](https://blog.csdn.net/weixin_38362784/article/details/111320540)
 ```
 python ./tools/test.py ./configs/car_cfg.py ./work_dir/checkpoint_epoch_20.pth --out ./work_dir/eval_result
 ```
+#### visualize the test result
+> Reference: https://github.com/skyhehe123/SA-SSD/issues/80  \\\
+> Reference: https://github.com/kuixu/kitti_object_vis
 
+Please update `GT_ROOT_DIR` as your KITTI path and `PRED_DIR` as your OUTPUT path.
+```
+python visualize/kitti_object.py -p
+```
+TODO: Show examples
 
 # Original Repository
 >  https://github.com/skyhehe123/SA-SSD
