@@ -17,7 +17,9 @@ Please update `GT_ROOT_DIR` as your KITTI path
 ```
 python visualize/kitti_object.py
 ```
-TODO: Show examples
+<img src="./doc/vis_example_1.png">
+<img src="./doc/vis_example_2.png">
+<img src="./doc/vis_example_3.png">
 
 ## Train
 
@@ -45,7 +47,9 @@ Please update `GT_ROOT_DIR` as your KITTI path and `PRED_DIR` as your OUTPUT pat
 ```
 python visualize/kitti_object.py -p
 ```
-TODO: Show examples
+<img src="./doc/vis_example_4.png">
+<img src="./doc/vis_example_5.png">
+<img src="./doc/vis_example_6.png">
 
 # Original Repository
 >  https://github.com/skyhehe123/SA-SSD
