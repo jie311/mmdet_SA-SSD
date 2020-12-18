@@ -3,6 +3,7 @@ __pycache__/
 spconv
 work_dir
 .vscode
+pretrain
 
 # Distribution / packaging
 .Python
