@@ -9,7 +9,7 @@
 
 
 ### Three Class: Car Pedestrian Cyclist
-| branch||Car AP@0.70, 0.70, 0.70| Pedestrian AP@0.50, 0.50, 0.50|Cyclist AP@0.50, 0.50, 0.50|
+| |branch|Car AP@0.70, 0.70, 0.70| Pedestrian AP@0.50, 0.50, 0.50|Cyclist AP@0.50, 0.50, 0.50|
 |--|--|--|--|--|
 |SA-SSD AuxNet|	main |89.85, 79.69, 78.97|52.75, 44.59, 43.75|67.90, 61.47, 60.33|
 |Our AuxNet|enhanced|89.81, 79.67, 78.91|54.01, 46.34, 39.34|64.57, 65.13, 63.51|
