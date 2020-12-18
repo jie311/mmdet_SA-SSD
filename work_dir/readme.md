@@ -1,0 +1,1 @@
+The models are stored in [百度云盘 00学习>10_科研>3D目标检测>记录>SA-SSD>SA-SSD训练模型]

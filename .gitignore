@@ -1,9 +1,10 @@
 __pycache__/
 .idea
 spconv
-work_dir
+work_dir/*
 .vscode
 pretrain
+!work_dir/readme.md
 
 # Distribution / packaging
 .Python
